@@ -6,7 +6,7 @@
 -- Один ключ → много карт (1:N)
 -- =============================================
 CREATE TABLE IF NOT EXISTS keys (
-    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    id          TEXT PRIMARY KEY,
     name        TEXT    NOT NULL,               -- Человекочитаемое название ключа
     key_value   TEXT    NOT NULL,               -- Hex-представление ключа (48 hex chars = 6 bytes MIFARE key)
     key_type    TEXT    NOT NULL DEFAULT 'A',   -- 'A' или 'B' (MIFARE Classic sector keys)
@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS keys (
 -- Таблица транспортных карт MIFARE
 -- =============================================
 CREATE TABLE IF NOT EXISTS cards (
-    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    id            TEXT PRIMARY KEY,
     card_number   TEXT    NOT NULL UNIQUE,       -- UID карты (hex, например: A1B2C3D4)
     owner_name    TEXT    NOT NULL,              -- Имя владельца
     balance       INTEGER NOT NULL DEFAULT 0,   -- Баланс в копейках (избегаем float)
@@ -40,7 +40,7 @@ CREATE INDEX IF NOT EXISTS idx_cards_key_id      ON cards(key_id);
 -- Таблица терминалов (валидаторов)
 -- =============================================
 CREATE TABLE IF NOT EXISTS terminals (
-    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    id            TEXT PRIMARY KEY,
     serial_number TEXT    NOT NULL UNIQUE,      -- Серийный номер устройства
     name          TEXT    NOT NULL,             -- Название (например: "Автобус №42 - Передний")
     location      TEXT    NOT NULL,             -- Адрес установки
@@ -57,7 +57,7 @@ CREATE INDEX IF NOT EXISTS idx_terminals_serial ON terminals(serial_number);
 -- Таблица транзакций
 -- =============================================
 CREATE TABLE IF NOT EXISTS transactions (
-    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    id            TEXT PRIMARY KEY,
     card_id       INTEGER NOT NULL REFERENCES cards(id)     ON DELETE RESTRICT,
     terminal_id   INTEGER NOT NULL REFERENCES terminals(id) ON DELETE RESTRICT,
     amount        INTEGER NOT NULL,             -- Сумма списания в копейках
@@ -76,7 +76,7 @@ CREATE INDEX IF NOT EXISTS idx_transactions_created_at  ON transactions(created_
 -- Таблица пользователей системы
 -- =============================================
 CREATE TABLE IF NOT EXISTS users (
-    id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    id           TEXT PRIMARY KEY,
     username     TEXT    NOT NULL UNIQUE,
     password_hash TEXT   NOT NULL,              -- bcrypt hash
     full_name    TEXT    NOT NULL,
