@@ -1,0 +1,26 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: go_nginx_app
+    ports:
+      - "8888:8888"   # HTTPS
+      - "80:80"       # HTTP → редирект на HTTPS
+    environment:
+      - APP_ENV=production
+      - APP_PORT=8888           # внутренний порт Go-приложения
+      - DB_PATH=/app/app.db     # путь к SQLite (если используется)
+    volumes:
+      - app_db:/app             # персистентность БД
+    restart: unless-stopped
+    # healthcheck:
+    #   test: ["CMD", "wget", "-qO-", "--no-check-certificate",
+    #          "https://localhost:8888/health"]
+    #   interval: 30s
+    #   timeout: 10s
+    #   retries: 3
+    #   start_period: 15s
+
+volumes:
+  app_db:

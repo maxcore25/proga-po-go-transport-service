@@ -85,6 +85,22 @@ make help
 make dev
 ```
 
+## Build and Run App with Docker
+
+```sh
+# Через docker-compose
+docker compose up --build
+
+# Или напрямую
+docker build -t proga-po-go-transport-service .
+docker run -p 8888:8888 proga-po-go-transport-service
+```
+
+After this, you get access to:
+
+- API: https://localhost:8888/api/v1
+- Swagger: https://localhost:8888/api/v1/swagger/index.html
+
 ## Tests
 
 ```sh
