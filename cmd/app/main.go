@@ -7,10 +7,13 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+
+	"github.com/maxcore25/proga-po-go-transport-service/internal/shared/config"
+
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 
-	"github.com/maxcore25/proga-po-go-transport-service/internal/shared/config"
+	_ "github.com/maxcore25/proga-po-go-transport-service/docs"
 )
 
 // @title Transport Card Payment Authorization Service API
