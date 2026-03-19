@@ -10,7 +10,7 @@ import (
 type UserRepository interface {
 	Create(user *model.User) error
 	GetByID(id uuid.UUID) (*model.User, error)
-	GetByEmail(email string) (*model.User, error)
+	GetByUsername(username string) (*model.User, error)
 	GetAll() ([]*model.User, error)
 	Find(filter dto.UserFilter) ([]*model.User, error)
 	UpdateByID(id uuid.UUID, updateData dto.UpdateUserRequest) error
@@ -37,9 +37,9 @@ func (r *userRepository) GetByID(id uuid.UUID) (*model.User, error) {
 	return &u, nil
 }
 
-func (r *userRepository) GetByEmail(email string) (*model.User, error) {
+func (r *userRepository) GetByUsername(username string) (*model.User, error) {
 	var u model.User
-	if err := r.db.First(&u, "email = ?", email).Error; err != nil {
+	if err := r.db.First(&u, "username = ?", username).Error; err != nil {
 		return nil, err
 	}
 	return &u, nil

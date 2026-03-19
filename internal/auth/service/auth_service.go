@@ -31,9 +31,9 @@ func NewAuthService(u repository.UserRepository, r repository.RefreshTokenReposi
 
 func (s *authService) Register(req dto.RegisterRequest) (*dto.AuthTokens, error) {
 	// 1. Check if user already exists
-	existing, _ := s.userRepo.GetByEmail(req.Email)
+	existing, _ := s.userRepo.GetByUsername(req.Username)
 	if existing != nil {
-		return nil, errors.New("user with this email already exists")
+		return nil, errors.New("user with this username already exists")
 	}
 
 	// 2. Hash password
@@ -44,14 +44,12 @@ func (s *authService) Register(req dto.RegisterRequest) (*dto.AuthTokens, error)
 
 	// 3. Create user model
 	user := &model.User{
-		FirstName:      req.FirstName,
-		LastName:       req.LastName,
-		MiddleName:     req.MiddleName,
-		Email:          req.Email,
-		Password:       hashed,
-		Phone:          req.Phone,
-		KnowledgeLevel: model.KnowledgeLevel(req.KnowledgeLevel),
-		Role:           model.RoleClient, // default for new users
+		ID:           uuid.New(),
+		Username:     req.Username,
+		PasswordHash: hashed,
+		FullName:     req.FullName,
+		IsAdmin:      false,
+		IsActive:     true,
 	}
 
 	// 4. Save to DB
@@ -60,12 +58,12 @@ func (s *authService) Register(req dto.RegisterRequest) (*dto.AuthTokens, error)
 	}
 
 	// 5. Generate JWTs
-	access, err := s.jwt.GenerateAccessToken(user.ID, string(user.Role))
+	access, err := s.jwt.GenerateAccessToken(user.ID, "user")
 	if err != nil {
 		return nil, err
 	}
 
-	refresh, err := s.jwt.GenerateRefreshToken(user.ID, string(user.Role))
+	refresh, err := s.jwt.GenerateRefreshToken(user.ID, "user")
 	if err != nil {
 		return nil, err
 	}
@@ -87,21 +85,26 @@ func (s *authService) Register(req dto.RegisterRequest) (*dto.AuthTokens, error)
 }
 
 func (s *authService) Login(req dto.LoginRequest) (*dto.AuthTokens, error) {
-	user, err := s.userRepo.GetByEmail(req.Email)
+	user, err := s.userRepo.GetByUsername(req.Username)
 	if err != nil {
-		return nil, errors.New("invalid email or password")
+		return nil, errors.New("invalid username or password")
 	}
 
-	if !utils.CheckPasswordHash(req.Password, user.Password) {
-		return nil, errors.New("invalid email or password")
+	if !utils.CheckPasswordHash(req.Password, user.PasswordHash) {
+		return nil, errors.New("invalid username or password")
 	}
 
-	access, err := s.jwt.GenerateAccessToken(user.ID, string(user.Role))
+	role := "user"
+	if user.IsAdmin {
+		role = "admin"
+	}
+
+	access, err := s.jwt.GenerateAccessToken(user.ID, role)
 	if err != nil {
 		return nil, err
 	}
 
-	refresh, err := s.jwt.GenerateRefreshToken(user.ID, string(user.Role))
+	refresh, err := s.jwt.GenerateRefreshToken(user.ID, role)
 	if err != nil {
 		return nil, err
 	}

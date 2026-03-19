@@ -25,13 +25,13 @@ func NewUserHandler(s service.UserService) *UserHandler {
 // @Accept json
 // @Produce json
 // @Security BearerAuth
-// @Param user body dto.CreateUserRequest true "New user"
+// @Param user body dto.RegisterRequest true "New user"
 // @Success 201 {object} dto.UserResponse
 // @Failure 400 {object} gin.H
 // @Failure 500 {object} gin.H
 // @Router /users [post]
 func (h *UserHandler) CreateUser(c *gin.Context) {
-	var req dto.CreateUserRequest
+	var req dto.RegisterRequest
 
 	if !httphelper.BindJSON(c, &req) {
 		return

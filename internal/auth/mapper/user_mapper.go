@@ -7,18 +7,12 @@ import (
 
 func NewUserResponse(u *model.User) *dto.UserResponse {
 	return &dto.UserResponse{
-		ID:                u.ID,
-		FirstName:         u.FirstName,
-		LastName:          u.LastName,
-		MiddleName:        u.MiddleName,
-		Email:             u.Email,
-		Phone:             u.Phone,
-		KnowledgeLevel:    string(u.KnowledgeLevel),
-		Role:              string(u.Role),
-		Rating:            u.Rating,
-		Portfolio:         u.Portfolio,
-		TestimonialsCount: u.TestimonialsCount,
-		CreatedAt:         u.CreatedAt,
-		UpdatedAt:         u.UpdatedAt,
+		ID:        u.ID,
+		Username:  u.Username,
+		FullName:  u.FullName,
+		IsAdmin:   u.IsAdmin,
+		IsActive:  u.IsActive,
+		CreatedAt: u.CreatedAt,
+		UpdatedAt: u.UpdatedAt,
 	}
 }

@@ -11,8 +11,8 @@ import (
 )
 
 type UserService interface {
-	CreateUser(req dto.CreateUserRequest) (*model.User, error)
-	GetByEmail(email string) (*model.User, error)
+	CreateUser(req dto.RegisterRequest) (*model.User, error)
+	GetByUsername(username string) (*model.User, error)
 	GetUser(id uuid.UUID) (*model.User, error)
 	GetAllUsers() ([]*model.User, error)
 	GetUsers(filter dto.UserFilter) ([]*model.User, error)
@@ -28,11 +28,11 @@ func NewUserService(r repository.UserRepository) UserService {
 	return &userService{repo: r}
 }
 
-func (s *userService) CreateUser(req dto.CreateUserRequest) (*model.User, error) {
+func (s *userService) CreateUser(req dto.RegisterRequest) (*model.User, error) {
 	// 1. Check if email already exists
-	existingUser, err := s.repo.GetByEmail(req.Email)
+	existingUser, err := s.repo.GetByUsername(req.Username)
 	if err == nil && existingUser != nil {
-		return nil, errors.New("user with this email already exists")
+		return nil, errors.New("user with this username already exists")
 	}
 
 	// 2. Hash password before storing
@@ -41,28 +41,13 @@ func (s *userService) CreateUser(req dto.CreateUserRequest) (*model.User, error)
 		return nil, errors.New("failed to hash password")
 	}
 
-	var middleNamePtr *string
-	if req.MiddleName != "" {
-		middleNamePtr = &req.MiddleName
-	}
-
-	var phonePtr *string
-	if req.Phone != "" {
-		phonePtr = &req.Phone
-	}
-
 	user := &model.User{
-		FirstName:         req.FirstName,
-		LastName:          req.LastName,
-		MiddleName:        middleNamePtr,
-		Email:             req.Email,
-		Password:          hashedPassword,
-		Phone:             phonePtr,
-		KnowledgeLevel:    model.KnowledgeLevel(req.KnowledgeLevel),
-		Role:              model.UserRole(req.Role),
-		Portfolio:         req.Portfolio,
-		Rating:            req.Rating,
-		TestimonialsCount: req.TestimonialsCount,
+		ID:           uuid.New(),
+		Username:     req.Username,
+		FullName:     req.FullName,
+		PasswordHash: hashedPassword,
+		IsAdmin:      false,
+		IsActive:     true,
 	}
 
 	if err := s.repo.Create(user); err != nil {
@@ -72,8 +57,8 @@ func (s *userService) CreateUser(req dto.CreateUserRequest) (*model.User, error)
 	return user, nil
 }
 
-func (s *userService) GetByEmail(email string) (*model.User, error) {
-	return s.repo.GetByEmail(email)
+func (s *userService) GetByUsername(username string) (*model.User, error) {
+	return s.repo.GetByUsername(username)
 }
 
 func (s *userService) GetUser(id uuid.UUID) (*model.User, error) {
