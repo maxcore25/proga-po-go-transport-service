@@ -39,7 +39,7 @@ make test
 1. start
 
 ```sh
-go mod init github.com/user/bmstu-it-courses/backend
+go mod init github.com/user/proga-po-go-transport-service
 ```
 
 2. Install globally
