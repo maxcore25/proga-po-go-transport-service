@@ -114,43 +114,42 @@ func (h *UserHandler) GetUser(c *gin.Context) {
 // @Summary Get all users
 // @Tags Users
 // @Produce json
-// @Param role query string false "User role filter. One of: client, admin, tutor"
 // @Success 200 {array} dto.UserResponse
 // @Router /users [get]
 func (h *UserHandler) GetAllUsers(c *gin.Context) {
 	// * v1 (without filters)
-	// users, err := h.service.GetAllUsers()
-	// if err != nil {
-	// 	c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-	// 	return
-	// }
-	// resp := make([]*dto.UserResponse, len(users))
-	// for i, user := range users {
-	// 	resp[i] = mapper.NewUserResponse(user)
-	// }
-	// c.JSON(http.StatusOK, resp)
-
-	// * v2 (with filters)
-	var filter dto.UserFilter
-
-	// Bind query params like ?role=tutor
-	if err := c.ShouldBindQuery(&filter); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid filters"})
-		return
-	}
-
-	users, err := h.service.GetUsers(filter)
+	users, err := h.service.GetAllUsers()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-
 	resp := make([]*dto.UserResponse, len(users))
 	for i, user := range users {
 		resp[i] = mapper.NewUserResponse(user)
 	}
-
 	c.JSON(http.StatusOK, resp)
+
+	// * v2 (with filters)
+	// var filter dto.UserFilter
+
+	// // Bind query params like ?role=tutor
+	// if err := c.ShouldBindQuery(&filter); err != nil {
+	// 	c.JSON(http.StatusBadRequest, gin.H{"error": "invalid filters"})
+	// 	return
+	// }
+
+	// users, err := h.service.GetUsers(filter)
+	// if err != nil {
+	// 	c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	// 	return
+	// }
+
+	// resp := make([]*dto.UserResponse, len(users))
+	// for i, user := range users {
+	// 	resp[i] = mapper.NewUserResponse(user)
+	// }
+
+	// c.JSON(http.StatusOK, resp)
 }
 
 // UpdateUserByID godoc
