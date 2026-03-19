@@ -11,7 +11,7 @@ import (
 )
 
 type UserService interface {
-	CreateUser(req dto.RegisterRequest) (*model.User, error)
+	CreateUser(req dto.CreateUserRequest) (*model.User, error)
 	GetByUsername(username string) (*model.User, error)
 	GetUser(id uuid.UUID) (*model.User, error)
 	GetAllUsers() ([]*model.User, error)
@@ -28,8 +28,8 @@ func NewUserService(r repository.UserRepository) UserService {
 	return &userService{repo: r}
 }
 
-func (s *userService) CreateUser(req dto.RegisterRequest) (*model.User, error) {
-	// 1. Check if email already exists
+func (s *userService) CreateUser(req dto.CreateUserRequest) (*model.User, error) {
+	// 1. Check if username already exists
 	existingUser, err := s.repo.GetByUsername(req.Username)
 	if err == nil && existingUser != nil {
 		return nil, errors.New("user with this username already exists")
@@ -46,7 +46,7 @@ func (s *userService) CreateUser(req dto.RegisterRequest) (*model.User, error) {
 		Username:     req.Username,
 		FullName:     req.FullName,
 		PasswordHash: hashedPassword,
-		IsAdmin:      false,
+		IsAdmin:      req.IsAdmin,
 		IsActive:     true,
 	}
 

@@ -4,6 +4,6 @@ package dto
 // @Description Login request payload
 // @Name LoginRequest
 type LoginRequest struct {
-	Username string `json:"username" binding:"required,min=2,max=50" example:"Иван"`
+	Username string `json:"username" binding:"required,min=2,max=50" example:"ivan"`
 	Password string `json:"password" binding:"required" example:"qwe123"`
 }

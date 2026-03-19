@@ -26,9 +26,17 @@ func RegisterAuthRoutes(r *gin.RouterGroup, userService service.UserService, aut
 	protected := userGroup.Group("")
 	protected.Use(middleware.AuthMiddleware(jwtManager))
 	{
-		protected.POST("", userHandler.CreateUser)
 		protected.GET("/me", userHandler.GetCurrentUser)
-		protected.PATCH("/:id", userHandler.UpdateUserByID)
-		protected.DELETE("/:id", userHandler.DeleteUserByID)
+	}
+
+	adminProtected := userGroup.Group("")
+	adminProtected.Use(
+		middleware.AuthMiddleware(jwtManager),
+		middleware.RoleMiddleware("admin"),
+	)
+	{
+		adminProtected.POST("", userHandler.CreateUser)
+		adminProtected.PATCH("/:id", userHandler.UpdateUserByID)
+		adminProtected.DELETE("/:id", userHandler.DeleteUserByID)
 	}
 }
