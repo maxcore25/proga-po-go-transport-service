@@ -14,6 +14,9 @@ type CardRepository interface {
 	GetAll() ([]*model.Card, error)
 	Find(filter dto.CardFilter) ([]*model.Card, error)
 	UpdateByID(id uuid.UUID, updateData dto.UpdateCardRequest) error
+	// UpdateBalance атомарно обновляет баланс карты.
+	// Используется только сервисом авторизации — не для внешнего CRUD.
+	UpdateBalance(id uuid.UUID, newBalance int) error
 	DeleteByID(id uuid.UUID) error
 }
 
@@ -70,6 +73,14 @@ func (r *cardRepository) Find(filter dto.CardFilter) ([]*model.Card, error) {
 
 func (r *cardRepository) UpdateByID(id uuid.UUID, updateData dto.UpdateCardRequest) error {
 	return r.db.Model(&model.Card{}).Where("id = ?", id).Updates(updateData).Error
+}
+
+// UpdateBalance обновляет только поле balance.
+// Не использует Updates(struct) во избежание GORM zero-value пропуска нуля.
+func (r *cardRepository) UpdateBalance(id uuid.UUID, newBalance int) error {
+	return r.db.Model(&model.Card{}).
+		Where("id = ?", id).
+		Update("balance", newBalance).Error
 }
 
 func (r *cardRepository) DeleteByID(id uuid.UUID) error {

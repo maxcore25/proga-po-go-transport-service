@@ -12,6 +12,8 @@ type KeyRepository interface {
 	GetByID(id uuid.UUID) (*model.Key, error)
 	GetByKeyValue(keyValue string) (*model.Key, error)
 	GetAll() ([]*model.Key, error)
+	// GetAllActive возвращает только активные ключи — для отправки на терминалы.
+	GetAllActive() ([]*model.Key, error)
 	Find(filter dto.KeyFilter) ([]*model.Key, error)
 	UpdateByID(id uuid.UUID, updateData dto.UpdateKeyRequest) error
 	DeleteByID(id uuid.UUID) error
@@ -53,11 +55,25 @@ func (r *keyRepository) GetAll() ([]*model.Key, error) {
 	return keys, nil
 }
 
+// GetAllActive фильтрует только is_active=true.
+// Отозванные ключи (is_active=false) не передаются терминалам —
+// карты на таких ключах не смогут быть расшифрованы (защита от компрометации).
+func (r *keyRepository) GetAllActive() ([]*model.Key, error) {
+	var keys []*model.Key
+	if err := r.db.Where("is_active = ?", true).Find(&keys).Error; err != nil {
+		return nil, err
+	}
+	return keys, nil
+}
+
 func (r *keyRepository) Find(filter dto.KeyFilter) ([]*model.Key, error) {
 	db := r.db.Model(&model.Key{})
 
 	if filter.IsActive != nil {
 		db = db.Where("is_active = ?", *filter.IsActive)
+	}
+	if filter.KeyType != nil {
+		db = db.Where("key_type = ?", *filter.KeyType)
 	}
 
 	var keys []*model.Key

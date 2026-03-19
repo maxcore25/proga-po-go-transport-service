@@ -30,6 +30,9 @@ import (
 	terminalRepo "github.com/maxcore25/proga-po-go-transport-service/internal/terminals/repository"
 	terminalService "github.com/maxcore25/proga-po-go-transport-service/internal/terminals/service"
 
+	terminalAPIHttp "github.com/maxcore25/proga-po-go-transport-service/internal/terminal_api/http"
+	terminalAPIService "github.com/maxcore25/proga-po-go-transport-service/internal/terminal_api/service"
+
 	transactionHttp "github.com/maxcore25/proga-po-go-transport-service/internal/transactions/http"
 	transactionRepo "github.com/maxcore25/proga-po-go-transport-service/internal/transactions/repository"
 	transactionService "github.com/maxcore25/proga-po-go-transport-service/internal/transactions/service"
@@ -139,6 +142,12 @@ func main() {
 	terminalsService := terminalService.NewTerminalService(terminalsRepo)
 	transactionsRepo := transactionRepo.NewTransactionRepository(db)
 	transactionsService := transactionService.NewTransactionService(transactionsRepo)
+	terminalAPIService := terminalAPIService.NewTerminalAPIService(
+		cardsRepo,
+		terminalsRepo,
+		transactionsRepo,
+		keysRepo,
+	)
 
 	// Register routes
 	api := r.Group("/api/v1")
@@ -147,6 +156,7 @@ func main() {
 		cardHttp.RegisterCardRoutes(api, cardsService, jwtManager)
 		keyHttp.RegisterKeyRoutes(api, keysService, jwtManager)
 		terminalHttp.RegisterTerminalRoutes(api, terminalsService, jwtManager)
+		terminalAPIHttp.RegisterTerminalAPIRoutes(api, terminalAPIService)
 		transactionHttp.RegisterTransactionRoutes(api, transactionsService, jwtManager)
 	}
 

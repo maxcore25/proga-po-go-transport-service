@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/maxcore25/proga-po-go-transport-service/internal/terminals/dto"
 	"github.com/maxcore25/proga-po-go-transport-service/internal/terminals/model"
@@ -14,6 +16,8 @@ type TerminalRepository interface {
 	GetAll() ([]*model.Terminal, error)
 	Find(filter dto.TerminalFilter) ([]*model.Terminal, error)
 	UpdateByID(id uuid.UUID, updateData dto.UpdateTerminalRequest) error
+	// UpdateLastSeen фиксирует время последнего обращения терминала к серверу.
+	UpdateLastSeen(id uuid.UUID, at time.Time) error
 	DeleteByID(id uuid.UUID) error
 }
 
@@ -70,6 +74,14 @@ func (r *terminalRepository) Find(filter dto.TerminalFilter) ([]*model.Terminal,
 
 func (r *terminalRepository) UpdateByID(id uuid.UUID, updateData dto.UpdateTerminalRequest) error {
 	return r.db.Model(&model.Terminal{}).Where("id = ?", id).Updates(updateData).Error
+}
+
+// UpdateLastSeen — вызывается при каждом обращении терминала к API.
+// Использует Update (одно поле) а не Updates (struct) — избегаем проблем с zero-value.
+func (r *terminalRepository) UpdateLastSeen(id uuid.UUID, at time.Time) error {
+	return r.db.Model(&model.Terminal{}).
+		Where("id = ?", id).
+		Update("last_seen_at", at).Error
 }
 
 func (r *terminalRepository) DeleteByID(id uuid.UUID) error {
