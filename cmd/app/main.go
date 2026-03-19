@@ -30,6 +30,10 @@ import (
 	terminalRepo "github.com/maxcore25/proga-po-go-transport-service/internal/terminals/repository"
 	terminalService "github.com/maxcore25/proga-po-go-transport-service/internal/terminals/service"
 
+	transactionHttp "github.com/maxcore25/proga-po-go-transport-service/internal/transactions/http"
+	transactionRepo "github.com/maxcore25/proga-po-go-transport-service/internal/transactions/repository"
+	transactionService "github.com/maxcore25/proga-po-go-transport-service/internal/transactions/service"
+
 	"github.com/maxcore25/proga-po-go-transport-service/internal/shared/config"
 	"github.com/maxcore25/proga-po-go-transport-service/internal/shared/utils"
 
@@ -133,6 +137,8 @@ func main() {
 	keysService := keyService.NewKeyService(keysRepo)
 	terminalsRepo := terminalRepo.NewTerminalRepository(db)
 	terminalsService := terminalService.NewTerminalService(terminalsRepo)
+	transactionsRepo := transactionRepo.NewTransactionRepository(db)
+	transactionsService := transactionService.NewTransactionService(transactionsRepo)
 
 	// Register routes
 	api := r.Group("/api/v1")
@@ -141,6 +147,7 @@ func main() {
 		cardHttp.RegisterCardRoutes(api, cardsService, jwtManager)
 		keyHttp.RegisterKeyRoutes(api, keysService, jwtManager)
 		terminalHttp.RegisterTerminalRoutes(api, terminalsService, jwtManager)
+		transactionHttp.RegisterTransactionRoutes(api, transactionsService, jwtManager)
 	}
 
 	// Swagger docs
