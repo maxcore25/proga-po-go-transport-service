@@ -22,6 +22,10 @@ import (
 	cardRepo "github.com/maxcore25/proga-po-go-transport-service/internal/cards/repository"
 	cardService "github.com/maxcore25/proga-po-go-transport-service/internal/cards/service"
 
+	keyHttp "github.com/maxcore25/proga-po-go-transport-service/internal/keys/http"
+	keyRepo "github.com/maxcore25/proga-po-go-transport-service/internal/keys/repository"
+	keyService "github.com/maxcore25/proga-po-go-transport-service/internal/keys/service"
+
 	"github.com/maxcore25/proga-po-go-transport-service/internal/shared/config"
 	"github.com/maxcore25/proga-po-go-transport-service/internal/shared/utils"
 
@@ -121,12 +125,15 @@ func main() {
 	authService := authService.NewAuthService(userRepo, refreshTokenRepo, jwtManager)
 	cardsRepo := cardRepo.NewCardRepository(db)
 	cardsService := cardService.NewCardService(cardsRepo)
+	keysRepo := keyRepo.NewKeyRepository(db)
+	keysService := keyService.NewKeyService(keysRepo)
 
 	// Register routes
 	api := r.Group("/api/v1")
 	{
 		authHttp.RegisterAuthRoutes(api, userService, authService, jwtManager)
 		cardHttp.RegisterCardRoutes(api, cardsService, jwtManager)
+		keyHttp.RegisterKeyRoutes(api, keysService, jwtManager)
 	}
 
 	// Swagger docs
