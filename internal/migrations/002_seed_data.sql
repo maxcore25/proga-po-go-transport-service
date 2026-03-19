@@ -1,23 +1,23 @@
 -- +goose Up
 -- +goose StatementBegin
 
--- Администратор по умолчанию (пароль: admin123)
+-- Администратор по умолчанию (пароль: qwe123)
 -- bcrypt hash сгенерирован с cost=12
 INSERT INTO users (id, username, password_hash, full_name, is_admin)
 VALUES (
     'a3f1e2d4-7b6c-4e8f-9a0b-1c2d3e4f5a6b',
     'admin',
-    '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewdBPj/VkklKiVSW',
+    '$2a$12$eacR3JNPxwqtNBC9b0iDuOhqJrJ/GR63wWQXo.kNHR55Ipk/G8pRG',
     'Системный администратор',
     1
 );
 
--- Оператор (пароль: operator123)
+-- Оператор (пароль: qwe123)
 INSERT INTO users (id, username, password_hash, full_name, is_admin)
 VALUES (
     'b7c8d9e0-1f2a-4b3c-8d4e-5f6a7b8c9d0e',
     'operator',
-    '$2a$12$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uSp4R0rRq',
+    '$2a$12$eacR3JNPxwqtNBC9b0iDuOhqJrJ/GR63wWQXo.kNHR55Ipk/G8pRG',
     'Оператор смены',
     0
 );

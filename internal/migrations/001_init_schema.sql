@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS cards (
     balance       INTEGER NOT NULL DEFAULT 0,   -- Баланс в копейках (избегаем float)
     is_blocked    INTEGER NOT NULL DEFAULT 0,   -- 0 = активна, 1 = заблокирована
     block_reason  TEXT,                         -- Причина блокировки
-    key_id        INTEGER NOT NULL REFERENCES keys(id) ON DELETE RESTRICT,
+    key_id        TEXT NOT NULL REFERENCES keys(id) ON DELETE RESTRICT,
     expires_at    DATETIME,                     -- Срок действия карты
     created_at    DATETIME NOT NULL DEFAULT (datetime('now')),
     updated_at    DATETIME NOT NULL DEFAULT (datetime('now'))
@@ -58,8 +58,8 @@ CREATE INDEX IF NOT EXISTS idx_terminals_serial ON terminals(serial_number);
 -- =============================================
 CREATE TABLE IF NOT EXISTS transactions (
     id            TEXT PRIMARY KEY,
-    card_id       INTEGER NOT NULL REFERENCES cards(id)     ON DELETE RESTRICT,
-    terminal_id   INTEGER NOT NULL REFERENCES terminals(id) ON DELETE RESTRICT,
+    card_id       TEXT NOT NULL REFERENCES cards(id)     ON DELETE RESTRICT,
+    terminal_id   TEXT NOT NULL REFERENCES terminals(id) ON DELETE RESTRICT,
     amount        INTEGER NOT NULL,             -- Сумма списания в копейках
     balance_before INTEGER NOT NULL,            -- Баланс до транзакции
     balance_after  INTEGER NOT NULL,            -- Баланс после транзакции
@@ -85,6 +85,20 @@ CREATE TABLE IF NOT EXISTS users (
     created_at   DATETIME NOT NULL DEFAULT (datetime('now')),
     updated_at   DATETIME NOT NULL DEFAULT (datetime('now'))
 );
+
+-- =============================================
+-- Таблица refresh_tokens
+-- =============================================
+CREATE TABLE IF NOT EXISTS refresh_tokens (
+    id         TEXT PRIMARY KEY,
+    user_id    TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    token      TEXT NOT NULL UNIQUE,
+    expires_at DATETIME NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user_id ON refresh_tokens(user_id);
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_token   ON refresh_tokens(token);
 
 -- =============================================
 -- Триггеры: автоматически обновляем updated_at
@@ -125,9 +139,20 @@ DROP TRIGGER IF EXISTS trg_users_updated_at;
 DROP TRIGGER IF EXISTS trg_keys_updated_at;
 DROP TRIGGER IF EXISTS trg_terminals_updated_at;
 DROP TRIGGER IF EXISTS trg_cards_updated_at;
+
+DROP INDEX IF EXISTS idx_cards_card_number;
+DROP INDEX IF EXISTS idx_cards_key_id;
+DROP INDEX IF EXISTS idx_terminals_serial;
+DROP INDEX IF EXISTS idx_transactions_card_id;
+DROP INDEX IF EXISTS idx_transactions_terminal_id;
+DROP INDEX IF EXISTS idx_transactions_created_at;
+DROP INDEX IF EXISTS idx_refresh_tokens_user_id;
+DROP INDEX IF EXISTS idx_refresh_tokens_token;
+
 DROP TABLE IF EXISTS transactions;
 DROP TABLE IF EXISTS cards;
 DROP TABLE IF EXISTS terminals;
 DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS keys;
+DROP TABLE IF EXISTS refresh_tokens;
 -- +goose StatementEnd
