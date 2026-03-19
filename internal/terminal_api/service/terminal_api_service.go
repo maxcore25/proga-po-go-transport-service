@@ -83,21 +83,22 @@ func (s *terminalAPIService) AuthorizePayment(req dto.PaymentAuthRequest) (*dto.
 		if card.BlockReason != nil {
 			reason = fmt.Sprintf("Card is blocked: %s", *card.BlockReason)
 		}
-		_ = s.recordDeclined(card.ID, terminal.ID, req.Amount, card.Balance, dto.CodeCardBlocked, reason, now)
+		_ = s.recordDeclined(card.ID, terminal.ID, req.Amount, card.Balance, reason, now)
 		return declined(dto.CodeCardBlocked, reason, now), nil
 	}
 
 	// ── Шаг 4: Карта просрочена? ────────────────────────────────────────────
 	if card.ExpiresAt != nil && card.ExpiresAt.Before(now) {
-		_ = s.recordDeclined(card.ID, terminal.ID, req.Amount, card.Balance, dto.CodeCardExpired, "Card has expired", now)
-		return declined(dto.CodeCardExpired, "Card has expired", now), nil
+		reason := "Card has expired"
+		_ = s.recordDeclined(card.ID, terminal.ID, req.Amount, card.Balance, reason, now)
+		return declined(dto.CodeCardExpired, reason, now), nil
 	}
 
 	// ── Шаг 5: Достаточно средств? ──────────────────────────────────────────
 	if card.Balance < req.Amount {
-		msg := fmt.Sprintf("Insufficient funds: balance %d, required %d", card.Balance, req.Amount)
-		_ = s.recordDeclined(card.ID, terminal.ID, req.Amount, card.Balance, dto.CodeInsufficientFunds, msg, now)
-		return declined(dto.CodeInsufficientFunds, "Insufficient funds", now), nil
+		reason := fmt.Sprintf("Insufficient funds: balance %d, required %d", card.Balance, req.Amount)
+		_ = s.recordDeclined(card.ID, terminal.ID, req.Amount, card.Balance, reason, now)
+		return declined(dto.CodeInsufficientFunds, reason, now), nil
 	}
 
 	// ── Всё ОК: списываем баланс и записываем транзакцию ───────────────────
@@ -197,7 +198,7 @@ func declined(code, message string, at time.Time) *dto.PaymentAuthResponse {
 func (s *terminalAPIService) recordDeclined(
 	cardID, terminalID uuid.UUID,
 	amount, balanceBefore int,
-	code, reason string,
+	reason string,
 	at time.Time,
 ) error {
 	tx := &transactionModel.Transaction{
