@@ -7,14 +7,12 @@ services:
     ports:
       - "8888:8888"   # HTTPS
       - "80:80"       # HTTP → редирект на HTTPS
-    # environment:
-    #   - APP_ENV=production
-    #   - APP_PORT=9000           # внутренний порт Go-приложения
-    #   - DB_PATH=/app/app.db     # путь к SQLite (если используется)
     env_file:
       - .env
     volumes:
       - app_db:/app             # персистентность БД
+    # environment:
+    #   - DB_PATH=/app/app.db
     restart: unless-stopped
     # healthcheck:
     #   test: ["CMD", "wget", "-qO-", "--no-check-certificate",

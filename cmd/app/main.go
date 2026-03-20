@@ -6,7 +6,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -79,7 +78,11 @@ func main() {
 	}
 
 	// Создаём директорию для БД если её нет
-	dbPath := "app.db"
+	dbPath := os.Getenv("DB_PATH")
+	if dbPath == "" {
+		dbPath = "app.db"
+	}
+
 	dir := filepath.Dir(dbPath)
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		log.Fatalf("❌ Failed to create db dir: %v", err)
@@ -114,12 +117,10 @@ func main() {
 	}
 
 	r := gin.Default()
+	// r.SetTrustedProxies([]string{"127.0.0.1", "172.16.0.0/12"})
 
-	// Enable CORS
 	r.Use(cors.New(cors.Config{
-		AllowOriginFunc: func(origin string) bool {
-			return strings.HasPrefix(origin, "http://localhost") || strings.HasPrefix(origin, "http://127.0.0.1")
-		},
+		AllowOriginFunc:  func(origin string) bool { return true },
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
 		AllowCredentials: true,
