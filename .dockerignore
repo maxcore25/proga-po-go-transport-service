@@ -26,4 +26,3 @@ Thumbs.db
 # Docker files themselves (не нужны внутри образа)
 Dockerfile
 docker-compose.yml
-docker/
