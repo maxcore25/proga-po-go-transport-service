@@ -1,14 +1,14 @@
 #!/bin/sh
 set -e
 
-echo "==> Starting Go REST API on :8888 ..."
+echo "==> Starting Go REST API on :9000 ..."
 /app/server &
 GO_PID=$!
 
 # Ждём, пока API поднимется (максимум 15 секунд)
 echo "==> Waiting for Go API to be ready..."
 for i in $(seq 1 15); do
-    if wget -q --spider http://127.0.0.1:8888/health 2>/dev/null; then
+    if wget -q --spider http://127.0.0.1:9000/health 2>/dev/null; then
         echo "==> Go API is up."
         break
     fi
