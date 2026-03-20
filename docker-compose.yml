@@ -11,16 +11,14 @@ services:
       - .env
     volumes:
       - app_db:/app             # персистентность БД
-    # environment:
-    #   - DB_PATH=/app/app.db
     restart: unless-stopped
-    # healthcheck:
-    #   test: ["CMD", "wget", "-qO-", "--no-check-certificate",
-    #          "https://localhost:8888/health"]
-    #   interval: 30s
-    #   timeout: 10s
-    #   retries: 3
-    #   start_period: 15s
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "--no-check-certificate",
+             "https://localhost:8888/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
 
 volumes:
   app_db:
