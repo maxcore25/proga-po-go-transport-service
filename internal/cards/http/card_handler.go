@@ -8,6 +8,7 @@ import (
 	"github.com/maxcore25/proga-po-go-transport-service/internal/cards/dto"
 	"github.com/maxcore25/proga-po-go-transport-service/internal/cards/mapper"
 	"github.com/maxcore25/proga-po-go-transport-service/internal/cards/service"
+	shareddto "github.com/maxcore25/proga-po-go-transport-service/internal/shared/dto"
 	httphelper "github.com/maxcore25/proga-po-go-transport-service/internal/shared/http"
 )
 
@@ -27,8 +28,8 @@ func NewCardHandler(s service.CardService) *CardHandler {
 // @Security BearerAuth
 // @Param card body dto.CreateCardRequest true "New card"
 // @Success 201 {object} dto.CardResponse
-// @Failure 400 {object} gin.H
-// @Failure 500 {object} gin.H
+// @Failure 400 {object} shareddto.ErrorDefaultResponse
+// @Failure 500 {object} shareddto.ErrorDefaultResponse
 // @Router /cards [post]
 func (h *CardHandler) CreateCard(c *gin.Context) {
 	var req dto.CreateCardRequest
@@ -39,7 +40,7 @@ func (h *CardHandler) CreateCard(c *gin.Context) {
 
 	card, err := h.service.CreateCard(req)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, shareddto.ErrorDefaultResponse{Error: err.Error()})
 		return
 	}
 
@@ -54,20 +55,20 @@ func (h *CardHandler) CreateCard(c *gin.Context) {
 // @Produce json
 // @Param id path string true "Card ID (uuid)"
 // @Success 200 {object} dto.CardResponse
-// @Failure 400 {object} gin.H
-// @Failure 404 {object} gin.H
+// @Failure 400 {object} shareddto.ErrorDefaultResponse
+// @Failure 404 {object} shareddto.ErrorDefaultResponse
 // @Router /cards/{id} [get]
 func (h *CardHandler) GetCard(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid uuid"})
+		c.JSON(http.StatusBadRequest, shareddto.ErrorDefaultResponse{Error: "invalid uuid"})
 		return
 	}
 
 	card, err := h.service.GetCard(id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "card not found"})
+		c.JSON(http.StatusNotFound, shareddto.ErrorDefaultResponse{Error: "card not found"})
 		return
 	}
 
@@ -85,7 +86,7 @@ func (h *CardHandler) GetCard(c *gin.Context) {
 func (h *CardHandler) GetAllCards(c *gin.Context) {
 	cards, err := h.service.GetAllCards()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, shareddto.ErrorDefaultResponse{Error: err.Error()})
 		return
 	}
 	resp := make([]*dto.CardResponse, len(cards))
@@ -103,16 +104,16 @@ func (h *CardHandler) GetAllCards(c *gin.Context) {
 // @Security BearerAuth
 // @Param id path string true "Card ID (uuid)"
 // @Param card body dto.UpdateCardRequest true "Card update data"
-// @Success 200 {object} gin.H
-// @Failure 400 {object} gin.H
-// @Failure 404 {object} gin.H
-// @Failure 500 {object} gin.H
+// @Success 200 {object} shareddto.MessageDefaultResponse
+// @Failure 400 {object} shareddto.ErrorDefaultResponse
+// @Failure 404 {object} shareddto.ErrorDefaultResponse
+// @Failure 500 {object} shareddto.ErrorDefaultResponse
 // @Router /cards/{id} [patch]
 func (h *CardHandler) UpdateCardByID(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid uuid"})
+		c.JSON(http.StatusBadRequest, shareddto.ErrorDefaultResponse{Error: "invalid uuid"})
 		return
 	}
 	var updateData dto.UpdateCardRequest
@@ -120,10 +121,10 @@ func (h *CardHandler) UpdateCardByID(c *gin.Context) {
 		return
 	}
 	if err := h.service.UpdateCardByID(id, updateData); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, shareddto.ErrorDefaultResponse{Error: err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "card updated successfully"})
+	c.JSON(http.StatusOK, shareddto.MessageDefaultResponse{Message: "card updated successfully"})
 }
 
 // DeleteCardByID godoc
@@ -133,19 +134,19 @@ func (h *CardHandler) UpdateCardByID(c *gin.Context) {
 // @Security BearerAuth
 // @Param id path string true "Card ID (uuid)"
 // @Success 204 {object} nil
-// @Failure 400 {object} gin.H
-// @Failure 404 {object} gin.H
-// @Failure 500 {object} gin.H
+// @Failure 400 {object} shareddto.ErrorDefaultResponse
+// @Failure 404 {object} shareddto.ErrorDefaultResponse
+// @Failure 500 {object} shareddto.ErrorDefaultResponse
 // @Router /cards/{id} [delete]
 func (h *CardHandler) DeleteCardByID(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid uuid"})
+		c.JSON(http.StatusBadRequest, shareddto.ErrorDefaultResponse{Error: "invalid uuid"})
 		return
 	}
 	if err := h.service.DeleteCardByID(id); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, shareddto.ErrorDefaultResponse{Error: err.Error()})
 		return
 	}
 	c.Status(http.StatusNoContent)

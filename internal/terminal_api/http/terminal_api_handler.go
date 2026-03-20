@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	shareddto "github.com/maxcore25/proga-po-go-transport-service/internal/shared/dto"
 	httphelper "github.com/maxcore25/proga-po-go-transport-service/internal/shared/http"
 	"github.com/maxcore25/proga-po-go-transport-service/internal/terminal_api/dto"
 	"github.com/maxcore25/proga-po-go-transport-service/internal/terminal_api/service"
@@ -27,8 +28,8 @@ func NewTerminalAPIHandler(s service.TerminalAPIService) *TerminalAPIHandler {
 // @Produce      json
 // @Param        body body dto.PaymentAuthRequest true "Payment authorization request"
 // @Success      200 {object} dto.PaymentAuthResponse "Approved or declined — HTTP 200 in both cases; check 'approved' field"
-// @Failure      400 {object} gin.H                   "Validation error (missing fields, amount ≤ 0, etc.)"
-// @Failure      500 {object} gin.H                   "Internal server error (DB write failure)"
+// @Failure      400 {object} shareddto.ErrorDefaultResponse                   "Validation error (missing fields, amount ≤ 0, etc.)"
+// @Failure      500 {object} shareddto.ErrorDefaultResponse                   "Internal server error (DB write failure)"
 // @Router       /terminal/authorize [post]
 func (h *TerminalAPIHandler) AuthorizePayment(c *gin.Context) {
 	var req dto.PaymentAuthRequest
@@ -40,7 +41,7 @@ func (h *TerminalAPIHandler) AuthorizePayment(c *gin.Context) {
 	// Только настоящие серверные ошибки дают 500.
 	resp, err := h.service.AuthorizePayment(req)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, shareddto.ErrorDefaultResponse{Error: err.Error()})
 		return
 	}
 
@@ -56,21 +57,21 @@ func (h *TerminalAPIHandler) AuthorizePayment(c *gin.Context) {
 // @Produce      json
 // @Param        terminal_serial query string true "Terminal serial number" example("TRM-001-BUS")
 // @Success      200 {object} dto.KeysLoadResponse
-// @Failure      400 {object} gin.H "Missing terminal_serial"
-// @Failure      403 {object} gin.H "Terminal not found or deactivated"
-// @Failure      500 {object} gin.H "Internal server error"
+// @Failure      400 {object} shareddto.ErrorDefaultResponse "Missing terminal_serial"
+// @Failure      403 {object} shareddto.ErrorDefaultResponse "Terminal not found or deactivated"
+// @Failure      500 {object} shareddto.ErrorDefaultResponse "Internal server error"
 // @Router       /terminal/keys [get]
 func (h *TerminalAPIHandler) LoadKeys(c *gin.Context) {
 	serial := c.Query("terminal_serial")
 	if serial == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "terminal_serial query parameter is required"})
+		c.JSON(http.StatusBadRequest, shareddto.ErrorDefaultResponse{Error: "terminal_serial query parameter is required"})
 		return
 	}
 
 	resp, err := h.service.LoadKeys(serial)
 	if err != nil {
 		// Не найден или деактивирован — 403, не 404, чтобы не раскрывать детали
-		c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
+		c.JSON(http.StatusForbidden, shareddto.ErrorDefaultResponse{Error: err.Error()})
 		return
 	}
 

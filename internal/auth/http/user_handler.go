@@ -8,6 +8,7 @@ import (
 	"github.com/maxcore25/proga-po-go-transport-service/internal/auth/dto"
 	"github.com/maxcore25/proga-po-go-transport-service/internal/auth/mapper"
 	"github.com/maxcore25/proga-po-go-transport-service/internal/auth/service"
+	shareddto "github.com/maxcore25/proga-po-go-transport-service/internal/shared/dto"
 	httphelper "github.com/maxcore25/proga-po-go-transport-service/internal/shared/http"
 )
 
@@ -27,8 +28,8 @@ func NewUserHandler(s service.UserService) *UserHandler {
 // @Security BearerAuth
 // @Param user body dto.CreateUserRequest true "New user"
 // @Success 201 {object} dto.UserResponse
-// @Failure 400 {object} gin.H
-// @Failure 500 {object} gin.H
+// @Failure 400 {object} shareddto.ErrorDefaultResponse
+// @Failure 500 {object} shareddto.ErrorDefaultResponse
 // @Router /users [post]
 func (h *UserHandler) CreateUser(c *gin.Context) {
 	var req dto.CreateUserRequest
@@ -39,7 +40,7 @@ func (h *UserHandler) CreateUser(c *gin.Context) {
 
 	user, err := h.service.CreateUser(req)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, shareddto.ErrorDefaultResponse{Error: err.Error()})
 		return
 	}
 
@@ -55,24 +56,24 @@ func (h *UserHandler) CreateUser(c *gin.Context) {
 // @Security BearerAuth
 // @Produce json
 // @Success 200 {object} dto.UserResponse
-// @Failure 400 {object} gin.H
-// @Failure 404 {object} gin.H
+// @Failure 400 {object} shareddto.ErrorDefaultResponse
+// @Failure 404 {object} shareddto.ErrorDefaultResponse
 // @Router /users/me [get]
 func (h *UserHandler) GetCurrentUser(c *gin.Context) {
 	userID, exists := c.Get("user_id")
 	if !exists {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "user_id not found in context"})
+		c.JSON(http.StatusBadRequest, shareddto.ErrorDefaultResponse{Error: "user_id not found in context"})
 		return
 	}
 	id, ok := userID.(uuid.UUID)
 	if !ok {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid user_id type"})
+		c.JSON(http.StatusBadRequest, shareddto.ErrorDefaultResponse{Error: "invalid user_id type"})
 		return
 	}
 
 	user, err := h.service.GetUser(id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+		c.JSON(http.StatusNotFound, shareddto.ErrorDefaultResponse{Error: "user not found"})
 		return
 
 	}
@@ -88,20 +89,20 @@ func (h *UserHandler) GetCurrentUser(c *gin.Context) {
 // @Produce json
 // @Param id path string true "User ID (uuid)"
 // @Success 200 {object} dto.UserResponse
-// @Failure 400 {object} gin.H
-// @Failure 404 {object} gin.H
+// @Failure 400 {object} shareddto.ErrorDefaultResponse
+// @Failure 404 {object} shareddto.ErrorDefaultResponse
 // @Router /users/{id} [get]
 func (h *UserHandler) GetUser(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid uuid"})
+		c.JSON(http.StatusBadRequest, shareddto.ErrorDefaultResponse{Error: "invalid uuid"})
 		return
 	}
 
 	user, err := h.service.GetUser(id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+		c.JSON(http.StatusNotFound, shareddto.ErrorDefaultResponse{Error: "user not found"})
 		return
 	}
 
@@ -120,7 +121,7 @@ func (h *UserHandler) GetAllUsers(c *gin.Context) {
 	// * v1 (without filters)
 	users, err := h.service.GetAllUsers()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, shareddto.ErrorDefaultResponse{Error: err.Error()})
 		return
 	}
 	resp := make([]*dto.UserResponse, len(users))
@@ -134,13 +135,13 @@ func (h *UserHandler) GetAllUsers(c *gin.Context) {
 
 	// // Bind query params like ?role=tutor
 	// if err := c.ShouldBindQuery(&filter); err != nil {
-	// 	c.JSON(http.StatusBadRequest, gin.H{"error": "invalid filters"})
+	// 	c.JSON(http.StatusBadRequest, shareddto.ErrorDefaultResponse{Error: "invalid filters"})
 	// 	return
 	// }
 
 	// users, err := h.service.GetUsers(filter)
 	// if err != nil {
-	// 	c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	// 	c.JSON(http.StatusInternalServerError, shareddto.ErrorDefaultResponse{Error: err.Error()})
 	// 	return
 	// }
 
@@ -160,16 +161,16 @@ func (h *UserHandler) GetAllUsers(c *gin.Context) {
 // @Security BearerAuth
 // @Param id path string true "User ID (uuid)"
 // @Param user body dto.UpdateUserRequest true "User update data"
-// @Success 200 {object} gin.H
-// @Failure 400 {object} gin.H
-// @Failure 404 {object} gin.H
-// @Failure 500 {object} gin.H
+// @Success 200 {object} shareddto.MessageDefaultResponse
+// @Failure 400 {object} shareddto.ErrorDefaultResponse
+// @Failure 404 {object} shareddto.ErrorDefaultResponse
+// @Failure 500 {object} shareddto.ErrorDefaultResponse
 // @Router /users/{id} [patch]
 func (h *UserHandler) UpdateUserByID(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid uuid"})
+		c.JSON(http.StatusBadRequest, shareddto.ErrorDefaultResponse{Error: "invalid uuid"})
 		return
 	}
 	var updateData dto.UpdateUserRequest
@@ -177,10 +178,10 @@ func (h *UserHandler) UpdateUserByID(c *gin.Context) {
 		return
 	}
 	if err := h.service.UpdateUserByID(id, updateData); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, shareddto.ErrorDefaultResponse{Error: err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "user updated successfully"})
+	c.JSON(http.StatusOK, shareddto.MessageDefaultResponse{Message: "user updated successfully"})
 }
 
 // DeleteUserByID godoc
@@ -190,19 +191,19 @@ func (h *UserHandler) UpdateUserByID(c *gin.Context) {
 // @Security BearerAuth
 // @Param id path string true "User ID (uuid)"
 // @Success 204 {object} nil
-// @Failure 400 {object} gin.H
-// @Failure 404 {object} gin.H
-// @Failure 500 {object} gin.H
+// @Failure 400 {object} shareddto.ErrorDefaultResponse
+// @Failure 404 {object} shareddto.ErrorDefaultResponse
+// @Failure 500 {object} shareddto.ErrorDefaultResponse
 // @Router /users/{id} [delete]
 func (h *UserHandler) DeleteUserByID(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid uuid"})
+		c.JSON(http.StatusBadRequest, shareddto.ErrorDefaultResponse{Error: "invalid uuid"})
 		return
 	}
 	if err := h.service.DeleteUserByID(id); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, shareddto.ErrorDefaultResponse{Error: err.Error()})
 		return
 	}
 	c.Status(http.StatusNoContent)

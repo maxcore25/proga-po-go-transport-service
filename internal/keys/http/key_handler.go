@@ -8,6 +8,7 @@ import (
 	"github.com/maxcore25/proga-po-go-transport-service/internal/keys/dto"
 	"github.com/maxcore25/proga-po-go-transport-service/internal/keys/mapper"
 	"github.com/maxcore25/proga-po-go-transport-service/internal/keys/service"
+	shareddto "github.com/maxcore25/proga-po-go-transport-service/internal/shared/dto"
 	httphelper "github.com/maxcore25/proga-po-go-transport-service/internal/shared/http"
 )
 
@@ -27,8 +28,8 @@ func NewKeyHandler(s service.KeyService) *KeyHandler {
 // @Security BearerAuth
 // @Param key body dto.CreateKeyRequest true "New key"
 // @Success 201 {object} dto.KeyResponse
-// @Failure 400 {object} gin.H
-// @Failure 500 {object} gin.H
+// @Failure 400 {object} shareddto.ErrorDefaultResponse
+// @Failure 500 {object} shareddto.ErrorDefaultResponse
 // @Router /keys [post]
 func (h *KeyHandler) CreateKey(c *gin.Context) {
 	var req dto.CreateKeyRequest
@@ -39,7 +40,7 @@ func (h *KeyHandler) CreateKey(c *gin.Context) {
 
 	key, err := h.service.CreateKey(req)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, shareddto.ErrorDefaultResponse{Error: err.Error()})
 		return
 	}
 
@@ -54,20 +55,20 @@ func (h *KeyHandler) CreateKey(c *gin.Context) {
 // @Produce json
 // @Param id path string true "Key ID (uuid)"
 // @Success 200 {object} dto.KeyResponse
-// @Failure 400 {object} gin.H
-// @Failure 404 {object} gin.H
+// @Failure 400 {object} shareddto.ErrorDefaultResponse
+// @Failure 404 {object} shareddto.ErrorDefaultResponse
 // @Router /keys/{id} [get]
 func (h *KeyHandler) GetKey(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid uuid"})
+		c.JSON(http.StatusBadRequest, shareddto.ErrorDefaultResponse{Error: "invalid uuid"})
 		return
 	}
 
 	key, err := h.service.GetKey(id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "key not found"})
+		c.JSON(http.StatusNotFound, shareddto.ErrorDefaultResponse{Error: "key not found"})
 		return
 	}
 
@@ -85,7 +86,7 @@ func (h *KeyHandler) GetKey(c *gin.Context) {
 func (h *KeyHandler) GetAllKeys(c *gin.Context) {
 	keys, err := h.service.GetAllKeys()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, shareddto.ErrorDefaultResponse{Error: err.Error()})
 		return
 	}
 	resp := make([]*dto.KeyResponse, len(keys))
@@ -103,16 +104,16 @@ func (h *KeyHandler) GetAllKeys(c *gin.Context) {
 // @Security BearerAuth
 // @Param id path string true "Key ID (uuid)"
 // @Param key body dto.UpdateKeyRequest true "Key update data"
-// @Success 200 {object} gin.H
-// @Failure 400 {object} gin.H
-// @Failure 404 {object} gin.H
-// @Failure 500 {object} gin.H
+// @Success 200 {object} shareddto.MessageDefaultResponse
+// @Failure 400 {object} shareddto.ErrorDefaultResponse
+// @Failure 404 {object} shareddto.ErrorDefaultResponse
+// @Failure 500 {object} shareddto.ErrorDefaultResponse
 // @Router /keys/{id} [patch]
 func (h *KeyHandler) UpdateKeyByID(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid uuid"})
+		c.JSON(http.StatusBadRequest, shareddto.ErrorDefaultResponse{Error: "invalid uuid"})
 		return
 	}
 	var updateData dto.UpdateKeyRequest
@@ -120,10 +121,10 @@ func (h *KeyHandler) UpdateKeyByID(c *gin.Context) {
 		return
 	}
 	if err := h.service.UpdateKeyByID(id, updateData); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, shareddto.ErrorDefaultResponse{Error: err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "key updated successfully"})
+	c.JSON(http.StatusOK, shareddto.MessageDefaultResponse{Message: "key updated successfully"})
 }
 
 // DeleteKeyByID godoc
@@ -133,19 +134,19 @@ func (h *KeyHandler) UpdateKeyByID(c *gin.Context) {
 // @Security BearerAuth
 // @Param id path string true "Key ID (uuid)"
 // @Success 204 {object} nil
-// @Failure 400 {object} gin.H
-// @Failure 404 {object} gin.H
-// @Failure 500 {object} gin.H
+// @Failure 400 {object} shareddto.ErrorDefaultResponse
+// @Failure 404 {object} shareddto.ErrorDefaultResponse
+// @Failure 500 {object} shareddto.ErrorDefaultResponse
 // @Router /keys/{id} [delete]
 func (h *KeyHandler) DeleteKeyByID(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid uuid"})
+		c.JSON(http.StatusBadRequest, shareddto.ErrorDefaultResponse{Error: "invalid uuid"})
 		return
 	}
 	if err := h.service.DeleteKeyByID(id); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, shareddto.ErrorDefaultResponse{Error: err.Error()})
 		return
 	}
 	c.Status(http.StatusNoContent)

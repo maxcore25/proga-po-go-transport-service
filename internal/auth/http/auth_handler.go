@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/maxcore25/proga-po-go-transport-service/internal/auth/dto"
 	"github.com/maxcore25/proga-po-go-transport-service/internal/auth/service"
+	shareddto "github.com/maxcore25/proga-po-go-transport-service/internal/shared/dto"
 	httphelper "github.com/maxcore25/proga-po-go-transport-service/internal/shared/http"
 )
 
@@ -25,8 +26,8 @@ func NewAuthHandler(s service.AuthService) *AuthHandler {
 // @Produce json
 // @Param register body dto.RegisterRequest true "User registration data"
 // @Success 200 {object} dto.AuthTokens
-// @Failure 400 {object} gin.H
-// @Failure 409 {object} gin.H
+// @Failure 400 {object} shareddto.ErrorDefaultResponse
+// @Failure 409 {object} shareddto.ErrorDefaultResponse
 // @Router /auth/register [post]
 func (h *AuthHandler) Register(c *gin.Context) {
 	var req dto.RegisterRequest
@@ -55,8 +56,8 @@ func (h *AuthHandler) Register(c *gin.Context) {
 // @Produce json
 // @Param login body dto.LoginRequest true "User credentials"
 // @Success 200 {object} dto.AuthTokens
-// @Failure 400 {object} gin.H
-// @Failure 401 {object} gin.H
+// @Failure 400 {object} shareddto.ErrorDefaultResponse
+// @Failure 401 {object} shareddto.ErrorDefaultResponse
 // @Router /auth/login [post]
 func (h *AuthHandler) Login(c *gin.Context) {
 	var req dto.LoginRequest
@@ -79,8 +80,8 @@ func (h *AuthHandler) Login(c *gin.Context) {
 // @Tags Auth
 // @Produce json
 // @Success 200 {object} dto.AuthTokens
-// @Failure 400 {object} gin.H
-// @Failure 401 {object} gin.H
+// @Failure 400 {object} shareddto.ErrorDefaultResponse
+// @Failure 401 {object} shareddto.ErrorDefaultResponse
 // @Router /auth/refresh [post]
 func (h *AuthHandler) Refresh(c *gin.Context) {
 	// Extract token from httpOnly cookie
@@ -109,27 +110,27 @@ func (h *AuthHandler) Refresh(c *gin.Context) {
 // @Tags Auth
 // @Accept json
 // @Produce json
-// @Success 200 {object} gin.H
-// @Failure 400 {object} gin.H
-// @Failure 500 {object} gin.H
+// @Success 200 {object} shareddto.MessageDefaultResponse
+// @Failure 400 {object} shareddto.ErrorDefaultResponse
+// @Failure 500 {object} shareddto.ErrorDefaultResponse
 // @Router /auth/logout [post]
 func (h *AuthHandler) Logout(c *gin.Context) {
 	// Read refresh token from HTTP-only cookie
 	refreshToken, err := httphelper.GetRefreshTokenFromCookie(c)
 	if err != nil {
 		// cookie missing or invalid
-		c.JSON(http.StatusBadRequest, gin.H{"error": "refresh token cookie not found"})
+		httphelper.JSONError(c, http.StatusBadRequest, errors.New("refresh token cookie not found"))
 		return
 	}
 
 	// Try to remove refresh token from store (service should handle missing token gracefully)
 	if err := h.service.Logout(refreshToken); err != nil {
 		// return 500 only on internal error; if token was already gone, service can return nil
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		httphelper.JSONError(c, http.StatusInternalServerError, err)
 		return
 	}
 
 	// Clear cookie on client
 	httphelper.ClearRefreshTokenCookie(c)
-	c.JSON(http.StatusOK, gin.H{"status": "ok"})
+	c.JSON(http.StatusOK, shareddto.MessageDefaultResponse{Message: "ok"})
 }
