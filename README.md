@@ -87,6 +87,10 @@ make dev
 
 ## Build and Run App with Docker
 
+Set `PORT=9000` in `.env` file.
+
+Run Docker command:
+
 ```sh
 # Через docker-compose
 docker compose up --build
@@ -100,21 +104,3 @@ After this, you get access to:
 
 - API: https://localhost:8888/api/v1
 - Swagger: https://localhost:8888/api/v1/swagger/index.html
-
-## Tests
-
-```sh
-# Run all tests (stdlib)
-go test ./...
-
-# Run all tests (pretty output)
-gotestsum --format testname
-
-# or
-
-# Windows
-.\tasks.ps1 test
-
-# Linux
-make test
-```
