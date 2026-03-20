@@ -1,6 +1,7 @@
 package http
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -40,7 +41,7 @@ func (h *KeyHandler) CreateKey(c *gin.Context) {
 
 	key, err := h.service.CreateKey(req)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, shareddto.ErrorDefaultResponse{Error: err.Error()})
+		httphelper.JSONError(c, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -62,13 +63,13 @@ func (h *KeyHandler) GetKey(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, shareddto.ErrorDefaultResponse{Error: "invalid uuid"})
+		httphelper.JSONError(c, http.StatusBadRequest, errors.New("invalid uuid"))
 		return
 	}
 
 	key, err := h.service.GetKey(id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, shareddto.ErrorDefaultResponse{Error: "key not found"})
+		httphelper.JSONError(c, http.StatusNotFound, errors.New("key not found"))
 		return
 	}
 
@@ -86,7 +87,7 @@ func (h *KeyHandler) GetKey(c *gin.Context) {
 func (h *KeyHandler) GetAllKeys(c *gin.Context) {
 	keys, err := h.service.GetAllKeys()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, shareddto.ErrorDefaultResponse{Error: err.Error()})
+		httphelper.JSONError(c, http.StatusInternalServerError, err)
 		return
 	}
 	resp := make([]*dto.KeyResponse, len(keys))
@@ -113,7 +114,7 @@ func (h *KeyHandler) UpdateKeyByID(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, shareddto.ErrorDefaultResponse{Error: "invalid uuid"})
+		httphelper.JSONError(c, http.StatusBadRequest, errors.New("invalid uuid"))
 		return
 	}
 	var updateData dto.UpdateKeyRequest
@@ -121,7 +122,7 @@ func (h *KeyHandler) UpdateKeyByID(c *gin.Context) {
 		return
 	}
 	if err := h.service.UpdateKeyByID(id, updateData); err != nil {
-		c.JSON(http.StatusInternalServerError, shareddto.ErrorDefaultResponse{Error: err.Error()})
+		httphelper.JSONError(c, http.StatusInternalServerError, err)
 		return
 	}
 	c.JSON(http.StatusOK, shareddto.MessageDefaultResponse{Message: "key updated successfully"})
@@ -142,11 +143,11 @@ func (h *KeyHandler) DeleteKeyByID(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, shareddto.ErrorDefaultResponse{Error: "invalid uuid"})
+		httphelper.JSONError(c, http.StatusBadRequest, errors.New("invalid uuid"))
 		return
 	}
 	if err := h.service.DeleteKeyByID(id); err != nil {
-		c.JSON(http.StatusInternalServerError, shareddto.ErrorDefaultResponse{Error: err.Error()})
+		httphelper.JSONError(c, http.StatusInternalServerError, err)
 		return
 	}
 	c.Status(http.StatusNoContent)

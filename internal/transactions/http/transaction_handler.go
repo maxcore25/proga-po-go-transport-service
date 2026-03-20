@@ -1,6 +1,7 @@
 package http
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -40,7 +41,7 @@ func (h *TransactionHandler) CreateTransaction(c *gin.Context) {
 
 	transaction, err := h.service.CreateTransaction(req)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, shareddto.ErrorDefaultResponse{Error: err.Error()})
+		httphelper.JSONError(c, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -62,13 +63,13 @@ func (h *TransactionHandler) GetTransaction(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, shareddto.ErrorDefaultResponse{Error: "invalid uuid"})
+		httphelper.JSONError(c, http.StatusBadRequest, errors.New("invalid uuid"))
 		return
 	}
 
 	transaction, err := h.service.GetTransaction(id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, shareddto.ErrorDefaultResponse{Error: "transaction not found"})
+		httphelper.JSONError(c, http.StatusNotFound, errors.New("transaction not found"))
 		return
 	}
 
@@ -86,7 +87,7 @@ func (h *TransactionHandler) GetTransaction(c *gin.Context) {
 func (h *TransactionHandler) GetAllTransactions(c *gin.Context) {
 	transactions, err := h.service.GetAllTransactions()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, shareddto.ErrorDefaultResponse{Error: err.Error()})
+		httphelper.JSONError(c, http.StatusInternalServerError, err)
 		return
 	}
 	resp := make([]*dto.TransactionResponse, len(transactions))
@@ -113,7 +114,7 @@ func (h *TransactionHandler) UpdateTransactionByID(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, shareddto.ErrorDefaultResponse{Error: "invalid uuid"})
+		httphelper.JSONError(c, http.StatusBadRequest, errors.New("invalid uuid"))
 		return
 	}
 	var updateData dto.UpdateTransactionRequest
@@ -121,7 +122,7 @@ func (h *TransactionHandler) UpdateTransactionByID(c *gin.Context) {
 		return
 	}
 	if err := h.service.UpdateTransactionByID(id, updateData); err != nil {
-		c.JSON(http.StatusInternalServerError, shareddto.ErrorDefaultResponse{Error: err.Error()})
+		httphelper.JSONError(c, http.StatusInternalServerError, err)
 		return
 	}
 	c.JSON(http.StatusOK, shareddto.MessageDefaultResponse{Message: "transaction updated successfully"})
@@ -142,11 +143,11 @@ func (h *TransactionHandler) DeleteTransactionByID(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, shareddto.ErrorDefaultResponse{Error: "invalid uuid"})
+		httphelper.JSONError(c, http.StatusBadRequest, errors.New("invalid uuid"))
 		return
 	}
 	if err := h.service.DeleteTransactionByID(id); err != nil {
-		c.JSON(http.StatusInternalServerError, shareddto.ErrorDefaultResponse{Error: err.Error()})
+		httphelper.JSONError(c, http.StatusInternalServerError, err)
 		return
 	}
 	c.Status(http.StatusNoContent)

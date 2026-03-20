@@ -1,4 +1,4 @@
-package dto
+package shareddto
 
 // ErrorDefaultResponse represents the structure of an error response.
 // @Description Error response payload

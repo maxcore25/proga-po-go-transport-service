@@ -1,6 +1,7 @@
 package http
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -40,7 +41,7 @@ func (h *TerminalHandler) CreateTerminal(c *gin.Context) {
 
 	terminal, err := h.service.CreateTerminal(req)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, shareddto.ErrorDefaultResponse{Error: err.Error()})
+		httphelper.JSONError(c, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -62,13 +63,13 @@ func (h *TerminalHandler) GetTerminal(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, shareddto.ErrorDefaultResponse{Error: "invalid uuid"})
+		httphelper.JSONError(c, http.StatusBadRequest, errors.New("invalid uuid"))
 		return
 	}
 
 	terminal, err := h.service.GetTerminal(id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, shareddto.ErrorDefaultResponse{Error: "terminal not found"})
+		httphelper.JSONError(c, http.StatusNotFound, errors.New("terminal not found"))
 		return
 	}
 
@@ -86,7 +87,7 @@ func (h *TerminalHandler) GetTerminal(c *gin.Context) {
 func (h *TerminalHandler) GetAllTerminals(c *gin.Context) {
 	terminals, err := h.service.GetAllTerminals()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, shareddto.ErrorDefaultResponse{Error: err.Error()})
+		httphelper.JSONError(c, http.StatusInternalServerError, err)
 		return
 	}
 	resp := make([]*dto.TerminalResponse, len(terminals))
@@ -113,7 +114,7 @@ func (h *TerminalHandler) UpdateTerminalByID(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, shareddto.ErrorDefaultResponse{Error: "invalid uuid"})
+		httphelper.JSONError(c, http.StatusBadRequest, errors.New("invalid uuid"))
 		return
 	}
 	var updateData dto.UpdateTerminalRequest
@@ -121,7 +122,7 @@ func (h *TerminalHandler) UpdateTerminalByID(c *gin.Context) {
 		return
 	}
 	if err := h.service.UpdateTerminalByID(id, updateData); err != nil {
-		c.JSON(http.StatusInternalServerError, shareddto.ErrorDefaultResponse{Error: err.Error()})
+		httphelper.JSONError(c, http.StatusInternalServerError, err)
 		return
 	}
 	c.JSON(http.StatusOK, shareddto.MessageDefaultResponse{Message: "terminal updated successfully"})
@@ -142,11 +143,11 @@ func (h *TerminalHandler) DeleteTerminalByID(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, shareddto.ErrorDefaultResponse{Error: "invalid uuid"})
+		httphelper.JSONError(c, http.StatusBadRequest, errors.New("invalid uuid"))
 		return
 	}
 	if err := h.service.DeleteTerminalByID(id); err != nil {
-		c.JSON(http.StatusInternalServerError, shareddto.ErrorDefaultResponse{Error: err.Error()})
+		httphelper.JSONError(c, http.StatusInternalServerError, err)
 		return
 	}
 	c.Status(http.StatusNoContent)

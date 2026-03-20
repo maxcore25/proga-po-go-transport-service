@@ -1,6 +1,7 @@
 package http
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -40,7 +41,7 @@ func (h *CardHandler) CreateCard(c *gin.Context) {
 
 	card, err := h.service.CreateCard(req)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, shareddto.ErrorDefaultResponse{Error: err.Error()})
+		httphelper.JSONError(c, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -62,13 +63,13 @@ func (h *CardHandler) GetCard(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, shareddto.ErrorDefaultResponse{Error: "invalid uuid"})
+		httphelper.JSONError(c, http.StatusBadRequest, errors.New("invalid uuid"))
 		return
 	}
 
 	card, err := h.service.GetCard(id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, shareddto.ErrorDefaultResponse{Error: "card not found"})
+		httphelper.JSONError(c, http.StatusNotFound, errors.New("card not found"))
 		return
 	}
 
@@ -86,7 +87,7 @@ func (h *CardHandler) GetCard(c *gin.Context) {
 func (h *CardHandler) GetAllCards(c *gin.Context) {
 	cards, err := h.service.GetAllCards()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, shareddto.ErrorDefaultResponse{Error: err.Error()})
+		httphelper.JSONError(c, http.StatusInternalServerError, err)
 		return
 	}
 	resp := make([]*dto.CardResponse, len(cards))
@@ -113,7 +114,7 @@ func (h *CardHandler) UpdateCardByID(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, shareddto.ErrorDefaultResponse{Error: "invalid uuid"})
+		httphelper.JSONError(c, http.StatusBadRequest, errors.New("invalid uuid"))
 		return
 	}
 	var updateData dto.UpdateCardRequest
@@ -121,7 +122,7 @@ func (h *CardHandler) UpdateCardByID(c *gin.Context) {
 		return
 	}
 	if err := h.service.UpdateCardByID(id, updateData); err != nil {
-		c.JSON(http.StatusInternalServerError, shareddto.ErrorDefaultResponse{Error: err.Error()})
+		httphelper.JSONError(c, http.StatusInternalServerError, err)
 		return
 	}
 	c.JSON(http.StatusOK, shareddto.MessageDefaultResponse{Message: "card updated successfully"})
@@ -142,11 +143,11 @@ func (h *CardHandler) DeleteCardByID(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, shareddto.ErrorDefaultResponse{Error: "invalid uuid"})
+		httphelper.JSONError(c, http.StatusBadRequest, errors.New("invalid uuid"))
 		return
 	}
 	if err := h.service.DeleteCardByID(id); err != nil {
-		c.JSON(http.StatusInternalServerError, shareddto.ErrorDefaultResponse{Error: err.Error()})
+		httphelper.JSONError(c, http.StatusInternalServerError, err)
 		return
 	}
 	c.Status(http.StatusNoContent)

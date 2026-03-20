@@ -1,10 +1,11 @@
 package http
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	shareddto "github.com/maxcore25/proga-po-go-transport-service/internal/shared/dto"
+	_ "github.com/maxcore25/proga-po-go-transport-service/internal/shared/dto"
 	httphelper "github.com/maxcore25/proga-po-go-transport-service/internal/shared/http"
 	"github.com/maxcore25/proga-po-go-transport-service/internal/terminal_api/dto"
 	"github.com/maxcore25/proga-po-go-transport-service/internal/terminal_api/service"
@@ -41,7 +42,7 @@ func (h *TerminalAPIHandler) AuthorizePayment(c *gin.Context) {
 	// Только настоящие серверные ошибки дают 500.
 	resp, err := h.service.AuthorizePayment(req)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, shareddto.ErrorDefaultResponse{Error: err.Error()})
+		httphelper.JSONError(c, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -64,14 +65,14 @@ func (h *TerminalAPIHandler) AuthorizePayment(c *gin.Context) {
 func (h *TerminalAPIHandler) LoadKeys(c *gin.Context) {
 	serial := c.Query("terminal_serial")
 	if serial == "" {
-		c.JSON(http.StatusBadRequest, shareddto.ErrorDefaultResponse{Error: "terminal_serial query parameter is required"})
+		httphelper.JSONError(c, http.StatusBadRequest, errors.New("terminal_serial query parameter is required"))
 		return
 	}
 
 	resp, err := h.service.LoadKeys(serial)
 	if err != nil {
 		// Не найден или деактивирован — 403, не 404, чтобы не раскрывать детали
-		c.JSON(http.StatusForbidden, shareddto.ErrorDefaultResponse{Error: err.Error()})
+		httphelper.JSONError(c, http.StatusForbidden, err)
 		return
 	}
 
