@@ -32,14 +32,6 @@ RUN go mod download
 # Копируем весь исходник
 COPY . .
 
-# # Генерируем Swagger-документацию (если используется swag)
-# RUN go install github.com/swaggo/swag/cmd/swag@latest && \
-#     swag init -g cmd/app/main.go -o ./docs || true
-
-# # Собираем бинарник — статически линкуем, убираем отладочные символы
-# RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
-#     go build -ldflags="-s -w" -o /app/server ./cmd/app
-
 # Генерируем Swagger-документацию
 RUN go install github.com/swaggo/swag/cmd/swag@latest && \
     swag init -g cmd/app/main.go -o ./docs --parseInternal --parseDependency || true && \
