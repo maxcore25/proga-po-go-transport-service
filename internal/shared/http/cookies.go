@@ -2,6 +2,8 @@ package httphelper
 
 import (
 	"errors"
+	"net/http"
+	"os"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -13,16 +15,28 @@ const (
 	refreshCookieTTL  = 7 * 24 * time.Hour
 )
 
+func refreshTokenCookieSecure() bool {
+	return os.Getenv("PORT") == "9000"
+}
+
+func refreshTokenCookieSameSite() http.SameSite {
+	if !refreshTokenCookieSecure() {
+		return http.SameSiteLaxMode
+	}
+	return http.SameSiteNoneMode
+}
+
 // SetRefreshTokenCookie sets a secure, HTTP-only refresh token cookie.
 func SetRefreshTokenCookie(c *gin.Context, token string) {
+	c.SetSameSite(refreshTokenCookieSameSite())
 	c.SetCookie(
 		refreshCookieName,
 		token,
 		int(refreshCookieTTL.Seconds()),
 		refreshCookiePath,
-		"",    // domain (empty = current)
-		false, // secure: true in production (HTTPS)
-		true,  // httpOnly
+		"", // domain (empty = current)
+		refreshTokenCookieSecure(),
+		true, // httpOnly
 	)
 }
 
@@ -40,13 +54,14 @@ func GetRefreshTokenFromCookie(c *gin.Context) (string, error) {
 
 // ClearRefreshTokenCookie removes the refresh token cookie.
 func ClearRefreshTokenCookie(c *gin.Context) {
+	c.SetSameSite(refreshTokenCookieSameSite())
 	c.SetCookie(
 		refreshCookieName,
 		"",
 		-1, // expire immediately
 		refreshCookiePath,
 		"",
-		false,
+		refreshTokenCookieSecure(),
 		true,
 	)
 }

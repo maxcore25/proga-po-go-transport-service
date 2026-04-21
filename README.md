@@ -93,11 +93,21 @@ Run Docker command:
 
 ```sh
 # Через docker-compose
-docker compose up --build
+docker compose up -d --build
 
 # Или напрямую
 docker build -t proga-po-go-transport-service .
 docker run -p 8888:8888 proga-po-go-transport-service
+```
+
+Stop Docker:
+
+```sh
+# Если нужно сохранить данные
+docker compose down
+
+# Если нужно полностью удалить все данные
+docker compose down -v
 ```
 
 After this, you get access to:
